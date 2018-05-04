@@ -84,7 +84,7 @@ def main():
                      help="number of radial distortion coefficients to use (up to 6, default %default)")
     group.add_option("--disable_calib_cb_fast_check", action='store_true', default=False,
                      help="uses the CALIB_CB_FAST_CHECK flag for findChessboardCorners")
-    group.add_option("--only_extrinsic"
+    group.add_option("--fix_intrinsic"
                      action="store_true", default=False,
                      help="perform only extrinsic calibration")
     parser.add_option_group(group)
@@ -110,6 +110,8 @@ def main():
     num_ks = options.k_coefficients
 
     calib_flags = 0
+    if options.fix_intrinsic:
+        calib_flags |= cv2.CALIB_FIX_INTRINSIC
     if options.fix_principal_point:
         calib_flags |= cv2.CALIB_FIX_PRINCIPAL_POINT
     if options.fix_aspect_ratio:
