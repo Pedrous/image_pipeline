@@ -47,6 +47,7 @@ import random
 import sensor_msgs.msg
 import tarfile
 import time
+import rospy
 from distutils.version import LooseVersion
 
 
@@ -841,6 +842,10 @@ class StereoCalibrator(Calibrator):
         super(StereoCalibrator, self).__init__(*args, **kwargs)
         self.l = MonoCalibrator(*args, **kwargs)
         self.r = MonoCalibrator(*args, **kwargs)
+        # ADDED BY ME #
+        self.l.from_message(rospy.wait_for_message('/camera/left/camera_info', sensor_msgs.msg.CameraInfo))
+        self.r.from_message(rospy.wait_for_message('/camera/right/camera_info', sensor_msgs.msg.CameraInfo))
+        ###############
         # Collecting from two cameras in a horizontal stereo rig, can't get
         # full X range in the left camera.
         self.param_ranges[0] = 0.4
@@ -880,16 +885,16 @@ class StereoCalibrator(Calibrator):
         # Perform monocular calibrations
         lcorners = [(l, b) for (l, r, b) in good]
         rcorners = [(r, b) for (l, r, b) in good]
-        self.l.cal_fromcorners(lcorners)
-        self.r.cal_fromcorners(rcorners)
-
+        #self.l.cal_fromcorners(lcorners)
+        #self.r.cal_fromcorners(rcorners)
+        
         lipts = [ l for (l, _, _) in good ]
         ripts = [ r for (_, r, _) in good ]
         boards = [ b for (_, _, b) in good ]
         
         opts = self.mk_object_points(boards, True)
 
-        flags = cv2.CALIB_FIX_INTRINSIC
+        flags = cv2.CALIB_USE_INTRINSIC_GUESS #cv2.CALIB_FIX_INTRINSIC
 
         self.T = numpy.zeros((3, 1), dtype=numpy.float64)
         self.R = numpy.eye(3, dtype=numpy.float64)
